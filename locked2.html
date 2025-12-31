@@ -1,0 +1,1079 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Westbound Enroute Template — Fields v12b</title>
+
+<style>
+
+:root{
+  --bg:#2a2a2a;
+  --line:rgba(143,143,143,0.45);
+  --white:#f2f2f2;
+  --gray:#bdbdbd;
+  --fio:#8f8f8f;
+  --fioOpacity:0.65;
+}
+body{
+  margin:0;
+  font-family: Arial, sans-serif;
+  background:#111;
+  color:#eaeaea;
+}
+.wrap{
+  display:grid;
+  grid-template-columns:380px 1fr;
+  gap:16px;
+  padding:16px;
+  align-items:start;
+}
+.card{
+  background:#151515;
+  border:1px solid #2a2a2a;
+  border-radius:12px;
+  padding:14px;
+}
+h1{font-size:16px;margin:0 0 10px 0;}
+.fields{
+  display:grid;
+  grid-template-columns:150px 1fr;
+  gap:8px 10px;
+}
+.label{font-size:15px;color:#cfcfcf;align-self:center;}
+select,input{
+  width:100%;
+  text-transform: uppercase;
+  box-sizing:border-box;
+  padding:10px 12px;
+  border-radius:10px;
+  border:1px solid #2d2d2d;
+  background:#0f0f0f;
+  color:#f3f3f3;
+  font-size:16px;
+  font-family: Arial, sans-serif;
+}
+.btnRow{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap;}
+button{
+  cursor:pointer;
+  border:1px solid #2d2d2d;
+  background:#0f0f0f;
+  color:#f1f1f1;
+  border-radius:10px;
+  padding:10px 12px;
+  font-weight:700;
+  font-family: Arial, sans-serif;
+}
+.stage{display:flex;justify-content:center;}
+
+.strip{
+  position:relative;
+  width:760px;
+  height:105px;
+  background:var(--bg);
+  border:1px solid #2a2a2a;
+  box-shadow:0 0 0 1px #222;
+  font-family: Arial, sans-serif;
+ background: #2a2a2a; background-color:#2a2a2a; }
+
+/* text in boxes */
+.cell{
+  position:absolute;
+  padding:4px 6px 2px 6px;
+  color:var(--white);
+  font-weight:700;
+  font-size:13px;
+  line-height:1;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  font-family: Arial, sans-serif;
+}
+.center{text-align:center;}
+.route{font-size:11px;padding-top:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.bold5{font-size:16px;font-weight:700;text-align:center;}
+.ident{
+  font-size: 18px;font-size:16px;font-weight:700; color: #ffffff;}
+.typeLine{
+  font-size: 16px;display:block;margin-top:2px;font-size:12px;color:var(--gray);font-weight:700;}
+.speedLine{
+  font-size: 16px;display:block;margin-top:1px;font-size:12px;color:var(--gray);font-weight:700;}
+
+/* lines */
+.hline,.vseg{position:absolute;background:var(--line);}
+.hline{height:1px;}
+.vseg{width:1px;}
+
+/* LOCKED FIO */
+.fioStack{
+  position:absolute;
+  left:6px; top:2px; bottom:2px;
+  display:flex; flex-direction:column;
+  justify-content:space-evenly;
+  font-size:16px;
+  font-weight:700;
+  color:var(--fio);
+  opacity:var(--fioOpacity);
+  line-height:1;
+  pointer-events:none;
+}
+
+/* background labels (Ack/RMK) */
+.bgLabel{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  width:100%;
+  height:100%;
+  font-size:16px;
+  font-weight:700;
+  color:var(--fio);
+  opacity:var(--fioOpacity);
+  letter-spacing:1px;
+  pointer-events:none;
+}
+
+.stripWrap{background-color:#2b2b2b;}
+.chk{
+  transform: scale(1.2);
+  margin-left: 2px;
+}
+
+.medevac-label{
+  display:flex;
+  align-items:center;
+  height:32px;
+}
+
+/* Runway dropdown styling */
+select{
+  width:100%;
+  min-height:42px;
+  height:42px;
+  box-sizing:border-box;
+  border:1px solid #555;
+  background:#1b1b1b;
+  color:#ffffff;
+  font-family:Arial, sans-serif;
+  font-size:15px;
+  line-height:1.2;
+  padding:8px 10px;           /* prevents text clipping */
+}
+/* Make sure key dropdowns (Direction + Runway) never clip */
+#direction, #runway{
+  min-height:42px;
+  height:42px;
+  padding-top:8px;
+  padding-bottom:8px;
+}
+select option{
+  background:#1b1b1b;
+  color:#ffffff;
+}
+
+</style>
+</head>
+
+<body>
+<div class="wrap">
+  <div class="card">
+    <h1>FDE Information</h1>
+
+    <div class="fields">
+      <div class="label">Enroute Direction</div>
+      <select id="direction">
+        <option value="WEST" selected>WESTBOUND</option>
+        <option value="EAST">EASTBOUND</option>
+      </select>
+
+<div class="label">Fix Posting</div>
+      <input id="fixPosting" list="fixPostingListWest" autocomplete="off" maxlength="7" pattern="[A-Z0-9/]{1,7}" title="Up to 7 characters (letters/numbers/ /)" list="fixPostingList">
+
+      <div class="label">Aircraft Ident</div><input id="airIdent" placeholder="ACA421">
+      <div class="label">Aircraft Type</div><input id="airType" placeholder="M/A320/W">
+      <div class="label">Speed</div><input id="speed" placeholder="450">
+      <div class="label">Departure</div><input id="departure" placeholder="CYYZ">
+      <div class="label">Arrival</div><input id="arrival" placeholder="CYVR">
+      <div class="label">Route</div><input id="route" placeholder="BOBKI MELTI TORNI RAGID5">
+      <div class="label">Cleared Altitude</div><input id="altitude" placeholder="F340">
+      
+      <div class="label">Flight Planned Altitude</div><input id="planAlt" placeholder="F360">
+
+      <div class="label">Squawk</div><input id="squawk" placeholder="1234">
+      <div class="label">Fix Posting Time</div><input id="fixTime" placeholder="1234">
+      <div style="grid-column:1 / -1; height:1px; background:#2a2a2a; margin:10px 0;"></div>
+      <div style="grid-column:1 / -1; font-size:13px; color:#bdbdbd; font-weight:700; margin-top:-2px;">EXTRAS</div>
+      <div style="grid-column:1 / -1;"></div>
+      
+
+      
+      <div class="label">Instructions</div><input id="instructions" placeholder="">
+      <div class="label">Assigned Speed - CAATS</div><input id="asgnSpeedCaats" placeholder="">
+      <div class="label">Assigned Speed - EFS</div><input id="asgnSpeedEfs" placeholder="">
+      <div class="label">Coordinated In</div><input id="coordIn" placeholder="F340">
+      <div class="label">Coordinated Out</div><input id="coordOut" placeholder="F360">
+
+      <div class="label">Runway (CYYZ)</div>
+      <div class="field">
+        <select id="runway">
+          <option value=""></option>
+          <option>05</option>
+          <option>06L</option>
+          <option>06R</option>
+          <option>15L</option>
+          <option>15R</option>
+          <option>23</option>
+          <option>24L</option>
+          <option>24R</option>
+          <option>33L</option>
+          <option>33R</option>
+        </select>
+      </div>
+
+      <div class="label">MEDEVAC</div><div style="display:flex;align-items:center;height:32px;"><input type="checkbox" id="medevacToggle" class="chk"></div>
+
+      <div class="label">RED W</div>
+      <div style="display:flex;align-items:center;height:42px;"><input type="checkbox" id="wrongWayToggle" class="chk"></div>
+
+      <div class="label">Wrong Way Altitude</div>
+      <div style="display:flex;align-items:center;height:42px;"><input type="checkbox" id="wrongWayAltToggle" class="chk"></div>
+
+      <div class="label">Slash</div>
+      <div style="display:flex;align-items:center;height:42px;"><input type="checkbox" id="slashToggle" class="chk"></div>
+
+      <div class="label">NONRVSM</div>
+      <div style="display:flex;align-items:center;height:42px;"><input type="checkbox" id="nonRvsmToggle" class="chk"></div>
+
+      <div class="label">SUPER</div>
+      <div style="display:flex;align-items:center;height:42px;"><input type="checkbox" id="superToggle" class="chk"></div>
+
+      <div class="label">Arrival Hat</div>
+      <div style="display:flex;align-items:center;height:42px;"><input type="checkbox" id="arrHatToggle" class="chk"></div>
+
+      <div class="label">Departure Hat</div>
+      <div style="display:flex;align-items:center;height:42px;"><input type="checkbox" id="depHatToggle" class="chk"></div>
+
+      <div class="label">Orange Highlight</div>
+      <div style="display:flex;align-items:center;height:42px;"><input type="checkbox" id="orangeHighlightToggle" class="chk"></div>
+
+      <div class="label">VFR</div>
+      <div style="display:flex;align-items:center;height:42px;"><input type="checkbox" id="vfrToggle" class="chk"></div>
+
+</div>
+<div class="btnRow">
+      <button id="btnPrint">Print / Save PDF</button>
+      <button id="btnClear">Clear</button>
+    </div>
+      
+
+
+    <p style="margin:10px 0 0 0;font-size:12px;color:#bdbdbd;">
+      Printing tip: enable <b>Background graphics</b>.
+    </p>
+  </div>
+
+  <div class="stage">
+    <div class="strip" id="strip"></div>
+  </div>
+</div>
+
+<script>
+
+
+
+
+const strip = document.getElementById("strip");
+
+// Side Slash marker (shown on the Fix Posting side)
+const sideSlash = document.createElement("div");
+sideSlash.textContent = "/";
+sideSlash.style.position = "absolute";
+sideSlash.style.fontFamily = "Arial, sans-serif";
+sideSlash.style.fontWeight = "400";
+sideSlash.style.fontSize = "86px";
+sideSlash.style.lineHeight = "0.95";
+sideSlash.style.color = "var(--white)";
+sideSlash.style.pointerEvents = "none";
+sideSlash.style.display = "none";
+sideSlash.style.zIndex = "25";
+strip.appendChild(sideSlash);
+
+
+// Orange highlight outline (entire strip)
+const orangeOutline = document.createElement("div");
+
+// VFR highlight outline (entire strip)
+const vfrOutline = document.createElement("div");
+vfrOutline.style.position = "absolute";
+vfrOutline.style.left = "0";
+vfrOutline.style.top = "0";
+vfrOutline.style.right = "0";
+vfrOutline.style.bottom = "0";
+vfrOutline.style.border = "3px solid #ffeb3b";  // yellow
+vfrOutline.style.pointerEvents = "none";
+vfrOutline.style.display = "none";
+vfrOutline.style.boxSizing = "border-box";
+vfrOutline.style.zIndex = "19";
+strip.appendChild(vfrOutline);
+
+orangeOutline.style.position = "absolute";
+orangeOutline.style.left = "0";
+orangeOutline.style.top = "0";
+orangeOutline.style.right = "0";
+orangeOutline.style.bottom = "0";
+orangeOutline.style.border = "3px solid #ff9800";  // orange
+orangeOutline.style.pointerEvents = "none";
+orangeOutline.style.display = "none";
+orangeOutline.style.boxSizing = "border-box";
+orangeOutline.style.zIndex = "20";
+strip.appendChild(orangeOutline);
+
+const Y_MAIN = 65;
+const BASE_W = 760;
+const BASE_H = 105;
+const CHAR = 8;
+
+/* ===== TOP ROW GEOMETRY (LOCKED) ===== */
+const BOX1_W = 135;
+const BOX2_W = 65;
+let BOX3_W = BOX2_W + (3*CHAR);
+let BOX4_W = 56*2;
+const BOX5_W = 58;
+const BOX7_W = BOX1_W;
+
+/* cleanup shift: 2 chars off box 3 and 4 to box 6 */
+const SHIFT = 2*CHAR;
+BOX3_W -= SHIFT;
+BOX4_W -= SHIFT;
+
+const USED = BOX1_W + BOX2_W + BOX3_W + BOX4_W + BOX5_W + BOX7_W;
+const BOX6_W = BASE_W - USED;
+
+const X1=0, X2=X1+BOX1_W, X3=X2+BOX2_W, X4=X3+BOX3_W, X5=X4+BOX4_W, X6=X5+BOX5_W, X7=X6+BOX6_W;
+
+/* ===== BOTTOM ROW ===== */
+const BL_SQUAWK_W = 41; // reduced by ~3 characters
+const BL_ACK_W = 48;
+const BL_ACK_X = BL_SQUAWK_W;
+const BL_ROUTE_X = BL_ACK_X + BL_ACK_W;
+const BL_RMK_X = 702;
+
+function h(y,x1,x2){ const d=document.createElement("div"); d.className="hline"; d.style.top=y+"px"; d.style.left=x1+"px"; d.style.width=(x2-x1)+"px"; strip.appendChild(d); }
+function v(x,y1,y2){ const d=document.createElement("div"); d.className="vseg"; d.style.left=x+"px"; d.style.top=y1+"px"; d.style.height=(y2-y1)+"px"; strip.appendChild(d); }
+
+/* main split */
+h(Y_MAIN,0,BASE_W);
+
+/* top verticals */
+[X2,X3,X4,X5,X6,X7].forEach(x=>v(x,0,Y_MAIN));
+
+/* Box 3 horizontal divider */
+h(Math.round(Y_MAIN/2), X3, X4);
+
+/* Box 6 dividers */
+const BOX6_DIV_Y = Math.round(Y_MAIN*0.66);
+h(BOX6_DIV_Y, X6, X7);
+const BOX6_DIV_X = Math.round(X6 + (X7-X6)*0.66);
+v(BOX6_DIV_X, BOX6_DIV_Y, Y_MAIN);
+
+/* bottom verticals */
+v(BL_ACK_X, Y_MAIN, BASE_H);
+v(BL_ROUTE_X, Y_MAIN, BASE_H);
+v(BL_RMK_X, Y_MAIN, BASE_H);
+
+/* cells */
+const BOXES = [
+  {id:"b1",x:X1,y:0,w:BOX1_W,h:Y_MAIN},
+  {id:"b2",x:X2,y:0,w:BOX2_W,h:Y_MAIN,cls:"bold5"},
+  {id:"b3",x:X3,y:0,w:BOX3_W,h:Y_MAIN,cls:"center"},
+  {id:"b4",x:X4,y:0,w:BOX4_W,h:Y_MAIN,cls:"center"},
+  {id:"b5_fio",x:X5,y:0,w:BOX5_W,h:Y_MAIN,cls:"center"},
+  {id:"b6",x:X6,y:0,w:BOX6_W,h:Y_MAIN},
+  {id:"b7",x:X7,y:0,w:BOX7_W,h:Y_MAIN},
+
+  {id:"squawkBox",x:0,y:Y_MAIN,w:BL_SQUAWK_W,h:BASE_H-Y_MAIN,cls:"center"},
+  {id:"ack",x:BL_ACK_X,y:Y_MAIN,w:BL_ACK_W,h:BASE_H-Y_MAIN},
+  {id:"routeBox",x:BL_ROUTE_X,y:Y_MAIN,w:BL_RMK_X-BL_ROUTE_X,h:BASE_H-Y_MAIN,cls:"route"},
+  {id:"rmk",x:BL_RMK_X,y:Y_MAIN,w:BASE_W-BL_RMK_X,h:BASE_H-Y_MAIN}
+];
+
+const els = {};
+for(const b of BOXES){
+  const d=document.createElement("div");
+  d.className="cell "+(b.cls||"");
+  d.style.left=b.x+"px"; d.style.top=b.y+"px"; d.style.width=b.w+"px"; d.style.height=b.h+"px";
+  strip.appendChild(d);
+  els[b.id]=d;
+}
+
+/* ===== Box 3 persistent style: runway centered ===== */
+if(els["b3"]){
+  els["b3"].style.display = "flex";
+  els["b3"].style.alignItems = "center";     // vertical center
+  els["b3"].style.justifyContent = "center"; // horizontal center
+  els["b3"].style.transform = "translateY(-14px)";
+  els["b3"].style.padding = "0";
+  els["b3"].style.fontSize = "18px";
+  els["b3"].style.fontWeight = "700";
+  els["b3"].style.fontFamily = "Arial, sans-serif";
+  els["b3"].style.color = "#ffffff";
+}
+
+/* Ack/RMK background labels */
+const ackLabel=document.createElement("div");
+ackLabel.className="bgLabel";
+ackLabel.textContent="Ack";
+els["ack"].appendChild(ackLabel);
+
+const rmkLabel=document.createElement("div");
+rmkLabel.className="bgLabel";
+rmkLabel.textContent="RMK";
+els["rmk"].appendChild(rmkLabel);
+
+/* FIO */
+const fio=document.createElement("div");
+fio.className="fioStack";
+fio.innerHTML="<div>F</div><div>I</div><div>O</div>";
+els["b5_fio"].appendChild(fio);
+
+/* Planned Altitude next to F */
+const planAltWrap = document.createElement("div");
+planAltWrap.style.position = "absolute";
+planAltWrap.style.top = "4px";
+planAltWrap.style.left = "22px";  // tighter to the F
+planAltWrap.style.fontSize = "15px";
+planAltWrap.style.fontWeight = "400";
+planAltWrap.style.fontFamily = "Arial, sans-serif";
+planAltWrap.style.color = "var(--white)";
+els["b5_fio"].appendChild(planAltWrap);
+
+/* Coord In/Out beside I and O */
+const coordInWrap = document.createElement("div");
+coordInWrap.style.position = "absolute";
+coordInWrap.style.left = "22px";
+coordInWrap.style.top = "24px";   // aligned with I row
+coordInWrap.style.fontSize = "15px";
+coordInWrap.style.fontWeight = "400";
+coordInWrap.style.fontFamily = "Arial, sans-serif";
+coordInWrap.style.color = "var(--white)";
+els["b5_fio"].appendChild(coordInWrap);
+
+const coordOutWrap = document.createElement("div");
+coordOutWrap.style.position = "absolute";
+coordOutWrap.style.left = "22px";
+coordOutWrap.style.top = "44px";  // aligned with O row
+coordOutWrap.style.fontSize = "15px";
+coordOutWrap.style.fontWeight = "400";
+coordOutWrap.style.fontFamily = "Arial, sans-serif";
+coordOutWrap.style.color = "var(--white)";
+els["b5_fio"].appendChild(coordOutWrap);
+
+
+/* ===== FIELD WIRING ===== */
+const direction = document.getElementById("direction");
+const fixPosting = document.getElementById("fixPosting");
+const airIdent  = document.getElementById("airIdent");
+const airType   = document.getElementById("airType");
+const speedIn   = document.getElementById("speed");
+const depIn     = document.getElementById("departure");
+const arrIn     = document.getElementById("arrival");
+const altitudeIn = document.getElementById("altitude");
+const planAltIn  = document.getElementById("planAlt");
+const coordInIn  = document.getElementById("coordIn");
+const coordOutIn = document.getElementById("coordOut");
+const squawkIn  = document.getElementById("squawk");
+const fixTimeIn = document.getElementById("fixTime");
+const routeIn   = document.getElementById("route");
+const runwayIn  = document.getElementById("runway");
+const instructionsIn = document.getElementById("instructions");
+const asgnSpeedCaatsIn = document.getElementById("asgnSpeedCaats");
+const asgnSpeedEfsIn   = document.getElementById("asgnSpeedEfs");
+const medevacToggle = document.getElementById("medevacToggle");
+const wrongWayToggle = document.getElementById("wrongWayToggle");
+const wrongWayAltToggle = document.getElementById("wrongWayAltToggle");
+const slashToggle = document.getElementById("slashToggle");
+const nonRvsmToggle = document.getElementById("nonRvsmToggle");
+const superToggle = document.getElementById("superToggle");
+const arrHatToggle = document.getElementById("arrHatToggle");
+const depHatToggle = document.getElementById("depHatToggle");
+const orangeHighlightToggle = document.getElementById("orangeHighlightToggle");
+const vfrToggle = document.getElementById("vfrToggle");
+if(medevacToggle){ medevacToggle.addEventListener("change", render); }
+if(wrongWayToggle){ wrongWayToggle.addEventListener("change", render); }
+if(wrongWayAltToggle){ wrongWayAltToggle.addEventListener("change", render); }
+if(slashToggle){ slashToggle.addEventListener("change", render); }
+if(arrHatToggle){ arrHatToggle.addEventListener("change", render); }
+if(depHatToggle){ depHatToggle.addEventListener("change", render); }
+if(orangeHighlightToggle){ orangeHighlightToggle.addEventListener("change", render); }
+if(vfrToggle){ vfrToggle.addEventListener("change", render); }
+// mutual exclusivity for NONRVSM / SUPER
+if(nonRvsmToggle){
+  nonRvsmToggle.addEventListener("change", () => {
+    if(nonRvsmToggle.checked && superToggle) superToggle.checked = false;
+    render();
+  });
+}
+if(superToggle){
+  superToggle.addEventListener("change", () => {
+    if(superToggle.checked && nonRvsmToggle) nonRvsmToggle.checked = false;
+    render();
+  });
+}
+
+
+// Assigned Speed: only one can be used at a time
+if(asgnSpeedCaatsIn){
+  asgnSpeedCaatsIn.addEventListener("input", ()=>{
+    if(asgnSpeedCaatsIn.value && asgnSpeedEfsIn) asgnSpeedEfsIn.value="";
+    render();
+  });
+}
+if(asgnSpeedEfsIn){
+  asgnSpeedEfsIn.addEventListener("input", ()=>{
+    if(asgnSpeedEfsIn.value && asgnSpeedCaatsIn) asgnSpeedCaatsIn.value="";
+    render();
+  });
+}
+
+
+function render(){
+  
+  // VFR Highlight outline
+  if(vfrToggle && vfrToggle.checked){
+    vfrOutline.style.display = "block";
+  } else {
+    vfrOutline.style.display = "none";
+  }
+// Orange Highlight outline
+  if(orangeHighlightToggle && orangeHighlightToggle.checked){
+    orangeOutline.style.display = "block";
+  } else {
+    orangeOutline.style.display = "none";
+  }
+
+  /* EAST/WEST swap logic
+     WESTBOUND:
+       - Box 1 = Aircraft Ident / Type / Speed
+       - Box 7 = Fix Posting
+     EASTBOUND:
+       - Box 1 = Fix Posting
+       - Box 7 = Aircraft Ident / Type / Speed
+  */
+  const fpVal = (fixPosting.value || "").trim();
+  const dir = (direction && direction.value) ? direction.value : "WEST";
+
+  
+
+  // Fix Posting side slash (large "/" on Fix Posting side)
+  if(slashToggle && slashToggle.checked){
+    const isEast = (/EAST/i.test(dir) || dir === "E" || dir === "EB");
+    const fpBoxId = isEast ? "b1" : "b7";
+    const b = (typeof BOXES !== "undefined") ? BOXES.find(x => x.id === fpBoxId) : null;
+    if(b){
+      // center vertically on the Fix Posting box
+      sideSlash.style.top = (b.y - 11) + "px";
+      // place outside the strip on that side
+      if(fpBoxId === "b1"){
+        sideSlash.style.left = "6px";
+      } else {
+        sideSlash.style.left = (b.x + b.w - 24) + "px";
+      }
+      sideSlash.style.display = "block";
+    } else {
+      sideSlash.style.display = "none";
+    }
+  } else {
+    sideSlash.style.display = "none";
+  }
+
+// Clear both boxes before rendering (keep identical padding so EAST/WEST look the same)
+  const identPad = "4px 6px 2px 6px";
+  els["b1"].style.padding = identPad;
+  els["b7"].style.padding = identPad;
+  els["b1"].style.overflow = "visible";
+  els["b7"].style.overflow = "visible";
+  els["b1"].innerHTML = "";
+  els["b7"].innerHTML = "";
+
+  let identTarget = "b1";   // default WEST
+  let fixTarget   = "b7";
+
+  if(dir === "EAST"){
+    identTarget = "b7";
+    fixTarget   = "b1";
+  }
+
+  const idBox = identTarget;
+
+  // Make ident box a positioning context for overlays (prevents layout shifts)
+  els[idBox].style.position = "relative";
+  els[idBox].style.overflow = "visible";
+
+    // Badge (yellow) above Fix Posting (shows even if Fix Posting is blank)
+  const badgeText = (superToggle && superToggle.checked) ? "SUPER"
+                   : (nonRvsmToggle && nonRvsmToggle.checked) ? "NONRVSM"
+                   : "";
+  if(badgeText){
+    const box = els[fixTarget];
+    box.style.overflow = "visible";
+    const badge = document.createElement("div");
+    badge.textContent = badgeText;
+    badge.style.position = "absolute";
+    // Directional alignment:
+    // Eastbound => right aligned (keeps clear of Slash on the Fix Posting side)
+    // Westbound => left aligned
+    const isEast = (/EAST/i.test(dir) || dir === "E" || dir === "EB");
+    if(isEast){
+      badge.style.right = "14px";
+      badge.style.left = "";
+      badge.style.textAlign = "right";
+    } else {
+      badge.style.left = "6px";
+      badge.style.right = "";
+      badge.style.textAlign = "left";
+    }
+
+    badge.style.top = "2px";
+    badge.style.fontSize = "13.5px";
+    badge.style.fontWeight = "400";
+    badge.style.fontFamily = "Arial, sans-serif";
+    badge.style.color = "#ffeb3b";
+    badge.style.pointerEvents = "none";
+    badge.style.zIndex = "10";
+    box.appendChild(badge);
+  }
+
+  // Render Fix Posting
+  if(fpVal){
+    const d = document.createElement("div");
+    d.style.display = "flex";
+    d.style.alignItems = "center";
+    d.style.justifyContent = "center";
+    d.style.width = "100%";
+    d.style.height = "100%";
+    d.style.marginTop = "-2px";
+    d.style.color = "#b8b8b8";
+    d.style.fontFamily = "Arial, sans-serif";
+    d.style.fontWeight = "700";
+    d.style.fontSize = "14.5px";
+    d.textContent = fpVal;
+    els[fixTarget].appendChild(d);
+  }
+
+  /* Box 2 = Fix Posting Time (top + centered) */
+  els["b2"].style.padding = "0";
+  els["b2"].innerHTML = "";
+  const ft = (fixTimeIn.value || "").trim();
+  if(ft){
+    const d = document.createElement("div");
+    d.style.display = "block";
+    d.style.width = "100%";
+    d.style.textAlign = "center";
+    d.style.paddingTop = "6px";
+    d.style.fontWeight = "700";
+    d.style.fontFamily = "Arial, sans-serif";
+    d.textContent = ft;
+    els["b2"].appendChild(d);
+  }
+
+  /* Box 3 = Runway Assignment (centered) */
+  const rw = (runwayIn && runwayIn.value ? runwayIn.value : "").trim().toUpperCase();
+  els["b3"].textContent = rw;
+
+
+  /* Box 5 = Flight Planned Altitude (beside F) */
+  const pa = (planAltIn.value||"").trim().toUpperCase();
+  planAltWrap.textContent = pa;
+  const cin = (coordInIn.value||"").trim().toUpperCase();
+  coordInWrap.textContent = cin;
+  const cout = (coordOutIn.value||"").trim().toUpperCase();
+  coordOutWrap.textContent = cout;
+
+  /* Box 6 = Instructions (top section only). Blank until entered. */
+  // Clear any previous instruction overlay
+  const oldInstr = els["b6"].querySelector(".instrText");
+  if(oldInstr) oldInstr.remove();
+
+  const instr = (instructionsIn && instructionsIn.value ? instructionsIn.value : "").trim().toUpperCase();
+  if(instr){
+    const d = document.createElement("div");
+    d.className = "instrText";
+    d.style.position = "absolute";
+    d.style.left = "0";
+    d.style.top = "0";
+    d.style.right = "0";
+    d.style.height = "66%";        // top section of box 6
+    d.style.display = "flex";
+    d.style.alignItems = "flex-start";
+    d.style.justifyContent = "flex-start";
+    d.style.textAlign = "left";
+    d.style.paddingLeft = "6px";
+    d.style.paddingTop = "6px";
+    d.style.fontSize = "14.5px";
+    d.style.fontWeight = "700";
+    d.style.color = "var(--white)";
+    d.style.fontFamily = "Arial, sans-serif";
+    d.style.pointerEvents = "none";
+    d.textContent = instr;
+    els["b6"].appendChild(d);
+  }
+
+  /* Box 4 = Altitude (top, centered, bold like ident) */
+
+  els["b4"].style.padding = "0";
+  els["b4"].innerHTML = "";
+  const alt = (altitudeIn.value||"").trim().toUpperCase();
+  if(alt){
+    const d = document.createElement("div");
+    d.style.display = "block";
+    d.style.width = "100%";
+    d.style.textAlign = "center";
+    d.style.paddingTop = "6px";
+    d.style.fontSize = "18px";   // same as ident
+    d.style.fontWeight = "700";  // bold
+    d.style.fontFamily = "Arial, sans-serif";
+    d.textContent = alt;
+    els["b4"].appendChild(d);
+  }
+
+  
+    /* RED W (red W bottom-left in Box 4) */
+  if(wrongWayToggle && wrongWayToggle.checked){
+    const w = document.createElement("div");
+    w.style.position = "absolute";
+    w.style.left = "6px";
+    w.style.bottom = "6px";
+    w.style.fontSize = "18px";
+    w.style.fontWeight = "900";
+    w.style.color = "#ff2b2b";
+    w.style.fontFamily = "Arial, sans-serif";
+    w.style.pointerEvents = "none";
+    w.textContent = "W";
+    els["b4"].appendChild(w);
+  }
+
+  /* Wrong Way Altitude (red box around cleared altitude) */
+  if(wrongWayAltToggle && wrongWayAltToggle.checked){
+    const altBox = document.createElement("div");
+    altBox.style.position = "absolute";
+    altBox.style.top = "2px";
+    altBox.style.left = "2px";
+    altBox.style.right = "2px";
+    altBox.style.height = "50%";
+    altBox.style.border = "2px solid #ff2b2b";
+    altBox.style.pointerEvents = "none";
+    els["b4"].appendChild(altBox);
+  }
+
+/* Aircraft Ident / Type / Speed (fixed slots; order-independent) */
+  els[idBox].innerHTML = "";
+  const block=document.createElement("div");
+  block.style.display="flex";
+  block.style.flexDirection="column";
+  block.style.gap="2px";
+
+  const identLine=document.createElement("div");
+  identLine.className="ident";
+  identLine.style.minHeight="16px";
+  identLine.textContent = ((airIdent && airIdent.value) ? airIdent.value : "").trim().toUpperCase();
+  identLine.style.color = "#ffffff";
+
+  const typeLine=document.createElement("div");
+  typeLine.className="typeLine";
+  typeLine.style.minHeight="14px";
+  typeLine.style.display="flex";
+  typeLine.style.alignItems="center";
+  typeLine.style.justifyContent="space-between";
+  typeLine.style.overflow="visible";
+  const typeText=document.createElement("span");
+  typeText.textContent = ((airType && airType.value) ? airType.value : "").trim().toUpperCase();
+  typeLine.appendChild(typeText);
+const speedLine=document.createElement("div");
+  speedLine.className="speedLine";
+  speedLine.style.minHeight="14px";
+  speedLine.style.whiteSpace="pre";
+  const spd = ((speedIn && speedIn.value) ? speedIn.value : "").trim().toUpperCase();
+  const asCraw = ((asgnSpeedCaatsIn && asgnSpeedCaatsIn.value) ? asgnSpeedCaatsIn.value : "").trim().toUpperCase();
+  const asC = asCraw.replace(/^A+/,"");
+    const asEraw = ((asgnSpeedEfsIn && asgnSpeedEfsIn.value) ? asgnSpeedEfsIn.value : "").trim().toUpperCase();
+  const asE = asEraw.replace(/^A+/,"");
+
+  // Fixed-column display: assigned speed starts ~9 characters in
+  speedLine.style.position = "relative";
+  speedLine.style.whiteSpace = "nowrap";
+  speedLine.innerHTML = "";
+
+  const spdSpan = document.createElement("span");
+  spdSpan.textContent = spd;
+  speedLine.appendChild(spdSpan);
+
+  // Only one assigned speed is shown; CAATS takes precedence if both somehow filled.
+  const assigned = asC || asE || "";
+  if(assigned){
+    const a = document.createElement("span");
+    a.textContent = "A" + assigned.replace(/^A+/,"");
+    a.style.position = "absolute";
+    a.style.left = "9ch";
+    a.style.top = "0";
+    a.style.color = asC ? "#40E0D0" : "#ff00ff";
+    speedLine.appendChild(a);
+  }
+
+  block.appendChild(identLine);
+  block.appendChild(typeLine);
+  // MEDEVAC + overlay (does not affect type/speed positioning)
+  if(medevacToggle && medevacToggle.checked){
+    const plus = document.createElement("div");
+    plus.textContent = "+";
+    plus.style.position = "absolute";
+    plus.style.right = "12px";
+    plus.style.top = "20px";          // aligns with the type row
+    plus.style.color = "#ff2b2b";
+    plus.style.fontWeight = "800";
+    plus.style.fontSize = "26px";
+    plus.style.lineHeight = "1";
+    plus.style.pointerEvents = "none";
+    els[idBox].appendChild(plus);
+  }
+
+  block.appendChild(speedLine);
+
+  // Only show lines that have any value OR keep empty lines to preserve positions
+  els[idBox].appendChild(block);
+
+  /* Bottom: route with DEP (top-left) and ARR (bottom-right) */
+  els["routeBox"].style.padding = "0";
+  els["routeBox"].innerHTML = "";
+  els["routeBox"].style.overflow = "visible";
+
+  const dep = (depIn.value||"").trim().toUpperCase();
+  const arr = (arrIn.value||"").trim().toUpperCase();
+  const rte = (routeIn.value||"").trim().toUpperCase();
+
+  // main route text (keeps original route styling)
+  const rteDiv = document.createElement("div");
+  rteDiv.style.position = "absolute";
+  rteDiv.style.left = "38px"; // 6px + ~4 chars indent
+  rteDiv.style.right = "6px";
+  rteDiv.style.top = "4px";
+  rteDiv.style.bottom = "20px"; // leave room for DEP/ARR on bottom
+  rteDiv.style.overflow = "hidden";
+  rteDiv.style.whiteSpace = "nowrap";
+  rteDiv.style.textOverflow = "ellipsis";
+  rteDiv.style.fontSize = "13.5px";
+  rteDiv.style.fontWeight = "700";
+  rteDiv.style.color = "var(--white)";
+  rteDiv.style.fontFamily = "Arial, sans-serif";
+  rteDiv.textContent = rte;
+
+  // DEP bottom-left (locked position)
+  const depWrap = document.createElement("div");
+  depWrap.style.position = "absolute";
+  depWrap.style.left = "6px";
+  depWrap.style.bottom = "4px";
+  depWrap.style.pointerEvents = "none";
+  depWrap.style.zIndex = "5";
+
+  const depText = document.createElement("div");
+  depText.style.position = "relative";
+  depText.style.display = "inline-block";
+  depText.style.fontSize = "13.5px";
+  depText.style.fontWeight = "700";
+  depText.style.color = "var(--white)";
+  depText.style.fontFamily = "Arial, sans-serif";
+  depText.textContent = dep;
+
+  depWrap.appendChild(depText);
+
+  // Departure Hat: 3-sided yellow box (left/right/top) as overlay (does NOT move text)
+  if(depHatToggle && depHatToggle.checked && dep){
+    const hat = document.createElement("div");
+    hat.style.position = "absolute";
+    hat.style.left = "-6px";
+    hat.style.top = "-6px";
+    hat.style.right = "-6px";
+    hat.style.bottom = "-4px"; // open bottom
+    hat.style.borderLeft = "2px solid #ffeb3b";
+    hat.style.borderRight = "2px solid #ffeb3b";
+    hat.style.borderTop = "2px solid #ffeb3b";
+    hat.style.borderBottom = "0";
+    hat.style.pointerEvents = "none";
+    hat.style.boxSizing = "border-box";
+    hat.style.zIndex = "6";
+    depWrap.appendChild(hat);
+  }
+// ARR bottom-right (locked position)
+  const arrWrap = document.createElement("div");
+  arrWrap.style.position = "absolute";
+  arrWrap.style.right = "6px";
+  arrWrap.style.bottom = "4px";
+  arrWrap.style.pointerEvents = "none";
+  arrWrap.style.zIndex = "5";
+
+  const arrText = document.createElement("div");
+  arrText.style.position = "relative";
+  arrText.style.display = "inline-block";
+  arrText.style.fontSize = "13.5px";
+  arrText.style.fontWeight = "700";
+  arrText.style.color = "var(--white)";
+  arrText.style.fontFamily = "Arial, sans-serif";
+  arrText.textContent = arr;
+
+  arrWrap.appendChild(arrText);
+
+  // Arrival Hat: draw a 3-sided yellow box as an overlay (does NOT move text)
+  if(arrHatToggle && arrHatToggle.checked && arr){
+    const hat = document.createElement("div");
+    hat.style.position = "absolute";
+    hat.style.left = "-6px";
+    hat.style.top = "-6px";
+    hat.style.right = "-6px";
+    hat.style.bottom = "-4px"; // leave the bottom open / no bottom line
+    hat.style.borderLeft = "2px solid #ffeb3b";
+    hat.style.borderRight = "2px solid #ffeb3b";
+    hat.style.borderTop = "2px solid #ffeb3b";
+    hat.style.borderBottom = "0";
+    hat.style.pointerEvents = "none";
+    hat.style.boxSizing = "border-box";
+    hat.style.zIndex = "6";
+    arrWrap.appendChild(hat);
+  }
+els["routeBox"].appendChild(rteDiv);
+  if(dep) els["routeBox"].appendChild(depWrap);
+  if(arr) els["routeBox"].appendChild(arrWrap);
+
+  /* Bottom: squawk (top-centered, not bold) */
+  els["squawkBox"].style.padding = "0";
+  els["squawkBox"].innerHTML = "";
+  const sq = (squawkIn.value||"").trim().toUpperCase();
+  if(sq){
+    const d = document.createElement("div");
+    d.style.display = "block";
+    d.style.width = "100%";
+    d.style.height = "100%";
+    d.style.textAlign = "center";
+    d.style.fontWeight = "400";
+    d.style.paddingTop = "6px";
+    d.style.fontFamily = "Arial, sans-serif";
+    d.textContent = sq;
+    els["squawkBox"].appendChild(d);
+  }
+}
+
+[fixPosting,airIdent,airType,speedIn,depIn,arrIn,altitudeIn,planAltIn,squawkIn,fixTimeIn,routeIn,coordInIn,coordOutIn,instructionsIn,asgnSpeedCaatsIn,asgnSpeedEfsIn].filter(Boolean).forEach(el=>el.addEventListener("input",render));
+fixPosting.addEventListener("change", render);
+direction.addEventListener("change", render);
+render();
+
+document.getElementById("btnPrint").addEventListener("click", ()=>window.print());
+document.getElementById("btnClear").addEventListener("click", ()=>{
+  direction.value="WEST";
+  fixPosting.value="";
+  airIdent.value=""; airType.value=""; speedIn.value="";
+  altitudeIn.value=""; planAltIn.value=""; squawkIn.value=""; fixTimeIn.value=""; routeIn.value=""; coordInIn.value=""; coordOutIn.value="";
+  if(instructionsIn) instructionsIn.value="";
+  if(asgnSpeedCaatsIn) asgnSpeedCaatsIn.value="";
+  if(asgnSpeedEfsIn) asgnSpeedEfsIn.value="";
+  if(runwayIn) runwayIn.value="";
+  if(medevacToggle) medevacToggle.checked=false;
+  if(wrongWayToggle) wrongWayToggle.checked=false;
+  if(wrongWayAltToggle) wrongWayAltToggle.checked=false;
+  if(slashToggle) slashToggle.checked=false;
+  if(arrHatToggle) arrHatToggle.checked=false;
+  if(depHatToggle) depHatToggle.checked=false;
+  if(nonRvsmToggle) nonRvsmToggle.checked=false;
+  if(superToggle) superToggle.checked=false;
+  render();
+});
+
+
+
+// Fix Posting: uppercase + length limit + datalist swap (West/East)
+const fixPostingIn = document.getElementById("fixPosting");
+const fixListWest = document.getElementById("fixPostingListWest");
+const fixListEast = document.getElementById("fixPostingListEast");
+const dirSel = document.getElementById("direction") || null;
+
+function normalizeFixPosting(){
+  if(!fixPostingIn) return;
+  let v = (fixPostingIn.value || "").toUpperCase();
+  if(v.length > 7) v = v.slice(0,7);
+  fixPostingIn.value = v;
+}
+
+function updateFixPostingList(){
+  if(!fixPostingIn) return;
+  const isEast = dirSel && /EAST/i.test(dirSel.value);
+  fixPostingIn.setAttribute("list", isEast ? "fixPostingListEast" : "fixPostingListWest");
+}
+
+if(fixPostingIn){
+  fixPostingIn.addEventListener("input", () => {
+    normalizeFixPosting();
+    render();
+  });
+}
+
+if(dirSel){
+  dirSel.addEventListener("change", () => {
+    updateFixPostingList();
+    render();
+  });
+}
+
+// initialize
+updateFixPostingList();
+normalizeFixPosting();
+
+
+// Runway Assignment (Top Box b3)
+
+if(runwayIn){ runwayIn.addEventListener("change", render); }
+
+
+</script>
+
+<style>
+@media print{
+  *{-webkit-print-color-adjust:exact !important; print-color-adjust:exact !important;}
+  body{background:white !important;}
+  .wrap{grid-template-columns:1fr; padding:0;}
+  .card{display:none !important;}
+  .strip{background:var(--bg)!important; box-shadow:none;}
+}
+
+.stripWrap{background-color:#2b2b2b;}
+.chk{
+  transform: scale(1.2);
+  margin-left: 2px;
+}
+
+.medevac-label{
+  display:flex;
+  align-items:center;
+  height:32px;
+}
+</style>
+
+
+
+
+
+
+
+<datalist id="fixPostingList">
+  <option value="IMEBA">
+  <option value="RAGID">
+  <option value="CYQA">
+  <option value="KENLU">
+  <option value="ILUSI">
+  <option value="TANGI">
+  <option value="CYPQ">
+  <option value="DUSUB">
+  <option value="A/DUSUB">
+  <option value="YSB">
+  <option value="YYB">
+</datalist>
+
+</body>
+</html>
